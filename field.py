@@ -96,7 +96,6 @@ class Field(tk.Frame):
         if self.robotCanMove() == True:
             py, px = self.robot.getPosition()
             self.blocks[py][px].grid(row=py*2 + 1, column=px*2 + 1)
-            self.blocks[py][px].setPassBlock()
             self.robot.grid_remove()
 
             self.robot.forward()
@@ -170,12 +169,12 @@ class Field(tk.Frame):
 
         return state
 
-    def robotFoundTarget(self, complete):
+    def robotFoundTarget(self, centre):
         py, px = self.robot.getPosition()
         i = 0
         for target in self.targets:
             if py == target[0] and px == target[1]:
-                complete[i] = True
+                centre[i] = True
                 return True
             i += 1
         return False
@@ -187,26 +186,7 @@ class Field(tk.Frame):
         else:
             return False
 
-    def robotMapping(self):
-        #create empty vwalls
-        vwalls = [False] * self.rowNum
-        for i in range(self.rowNum):
-            vwalls[i] = [False] * (self.colNum+1)
-
-        #create empty hwalls
-        hwalls = [False] * (self.rowNum+1)
-        for i in range(self.rowNum+1):
-            hwalls[i] = [False] * self.colNum
-            
-        flag = [False] * self.rowNum
-        marking = [False] * self.rowNum
-        count = [0] * self.rowNum
-        for i in range(self.rowNum):
-            flag[i] = [False] * self.colNum
-            marking[i] = [False] * self.colNum
-            count[i] = [0] * self.colNum
-
-        self.runRobotStat = True
+    def robotMapping(self, vwalls, hwalls):
         foundCentre = [False] * 4#to check found 4 block of centre  
         
         while self.runRobotStat == True and foundCentre.count(True) != 4:
@@ -233,6 +213,8 @@ class Field(tk.Frame):
     
     def robotDecisionFindHome(self, vwalls, hwalls):
         py, px = self.robot.getPosition()
+        self.blocks[py][px].setPassBlock()
+
         if self.blocks[py][px].flag == True:
             self.blocks[py][px].count += 1
         self.blocks[py][px].flag = True
@@ -337,6 +319,8 @@ class Field(tk.Frame):
 
     def robotDecisionFindTarget(self, vwalls, hwalls):
         py, px = self.robot.getPosition()
+        self.blocks[py][px].setPassBlock()
+
         if self.blocks[py][px].flag == True:
             self.blocks[py][px].count += 1
         self.blocks[py][px].flag = True
@@ -439,6 +423,56 @@ class Field(tk.Frame):
 
         time.sleep(0.05)            
 
+    def robotDecisionShortesPath(self, vwalls, hwalls):
+        py, px = self.robot.getPosition()
+        self.blocks[py][px].setYellowBlock()
+        state = self.robotGetState(vwalls, hwalls)
+
+        #0 3-Way
+        if state == 0:
+            left, front, right = self.getBlock(py, px, sf=(True, True, True))
+            if front['value'] <= right['value'] and front['value'] <= left['value']:
+                self.robotForward()
+            elif right['value'] <= front['value'] and right['value'] <= left['value']:
+                self.robotTurnRight()
+            else:
+                self.robotTurnLeft()
+        #1 2-Way
+        elif state == 1:
+            #compare potential between front and right
+            front, right = self.getBlock(py, px, sf=(False, True, True))
+            if front['value'] <= right['value']:
+                self.robotForward()
+            else:
+                self.robotTurnRight()
+        #2 2-Way
+        elif state == 2:
+            #compare potential between left and right
+            left, right = self.getBlock(py, px, sf=(True, False, True))
+            if right['value'] <= left['value']:
+                self.robotTurnRight()
+            else:
+                self.robotTurnLeft()
+        #4 2-Way
+        elif state == 4:
+            #compare potential between front and left
+            left, front = self.getBlock(py, px, sf=(True, True, False))
+            if front['value'] <= left['value']:
+                self.robotForward()
+            else:
+                self.robotTurnLeft()
+        #3 1-Way
+        elif state == 3:
+            self.robotTurnRight()
+        #5 1-Way
+        elif state == 5:
+            self.robotForward()
+        #6 1-Way
+        elif state == 6:
+            self.robotTurnLeft()
+
+        time.sleep(0.05)         
+
     def getBlock(self, py, px, sf=(True, True, True)):
         d = self.robot.getDirection()
         #sf = (left, front, right)
@@ -515,11 +549,33 @@ class Field(tk.Frame):
             for j in range(len(self.blocks[i])):
                 self.blocks[i][j].setValue(-1)
 
-    def robotShortesPath(self):
-        pass
+    def robotGotoTarget(self, vwalls, hwalls):
+        centre = [False] * 4
+        while centre.count(True) < 4:
+            py, px = self.robot.getPosition()
+            self.robotDecisionShortesPath(vwalls, hwalls)
+            self.robotFoundTarget(centre)
 
     def robotRun(self):
-        self.robotMapping()
+        #create empty vwalls
+        vwalls = [False] * self.rowNum
+        for i in range(self.rowNum):
+            vwalls[i] = [False] * (self.colNum+1)
+
+        #create empty hwalls
+        hwalls = [False] * (self.rowNum+1)
+        for i in range(self.rowNum+1):
+            hwalls[i] = [False] * self.colNum
+            
+        self.runRobotStat = True
+
+        self.robotMapping(vwalls, hwalls)
+        while (self.robot.getDirection() != 'N'):
+            self.robot.turnRight()
+            time.sleep(0.1)    
+
+        time.sleep(0.5)
+        self.robotGotoTarget(vwalls, hwalls)
 
     def robotStop(self):
         self.runRobotStat = False

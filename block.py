@@ -17,6 +17,10 @@ class Block(tk.Frame):
         self.text = self.canvas.create_text(10, 10, text=self.value)
         self.canvas.pack()
 
+    def setYellowBlock(self):
+        self.canvas.itemconfig(self.block, fill="gold")
+        self.canvas.update()
+
     def setPassBlock(self):
         self.havePass = True
         self.canvas.itemconfig(self.block, fill="grey")
