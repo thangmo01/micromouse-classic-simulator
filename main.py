@@ -25,7 +25,8 @@ class App(tk.Frame):
         self.root = parent
 
         self.field = Field(self, 16, 16)
-        self.field.setRobot(15, 0)
+        self.field.setStart(start=(15,0))
+        self.field.setTarget([(7,7),(8,7),(7,8), (8,8)])
         self.field.grid(row=0, column=0)
         
         self.robotControl = RobotControl(self, 
