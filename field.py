@@ -56,8 +56,8 @@ class Field(tk.Frame):
             self.hwalls[self.rowNum][i].grid(row=(self.rowNum+1) * 2, column=i*2 + 1)
 
         from map import maps
-        hwalls = maps['2018']['hwalls']
-        vwalls = maps['2018']['vwalls']
+        hwalls = maps['2019']['hwalls']
+        vwalls = maps['2019']['vwalls']
 
         i = 0
         for hwall in hwalls:
@@ -189,17 +189,12 @@ class Field(tk.Frame):
     def robotMapping(self, vwalls, hwalls):
         foundCentre = [False] * 4#to check found 4 block of centre  
         
-        while self.runRobotStat == True and foundCentre.count(True) != 4:
+        while foundCentre.count(True) != 4:
             self.robotDecisionFindTarget(vwalls, hwalls)
-            self.resetBlockValue()
-            self.flood(vwalls, hwalls)
-
             self.robotFoundTarget(foundCentre)
 
-        while self.runRobotStat == True and self.robotFoundStart() == False:
+        while self.robotFoundStart() == False:
             self.robotDecisionFindHome(vwalls, hwalls)
-            self.resetBlockValue()
-            self.flood(vwalls, hwalls)
         
         '''
         for i in range(self.rowNum + 1):
@@ -217,7 +212,10 @@ class Field(tk.Frame):
 
         if self.blocks[py][px].flag == True:
             self.blocks[py][px].count += 1
-        self.blocks[py][px].flag = True
+        else:
+            self.blocks[py][px].flag = True
+            self.resetBlockValue()
+            self.flood(vwalls, hwalls)
 
         over = False
         if self.blocks[py][px].count > 4:
@@ -312,10 +310,10 @@ class Field(tk.Frame):
             self.blocks[py][px].mark = True
 
             self.robotTurnRight()
-            time.sleep(0.05)
+            time.sleep(0.3)
             self.robotTurnRight()
 
-        time.sleep(0.05)
+        time.sleep(0.3)
 
     def robotDecisionFindTarget(self, vwalls, hwalls):
         py, px = self.robot.getPosition()
@@ -323,7 +321,10 @@ class Field(tk.Frame):
 
         if self.blocks[py][px].flag == True:
             self.blocks[py][px].count += 1
-        self.blocks[py][px].flag = True
+        else :
+            self.resetBlockValue()
+            self.flood(vwalls, hwalls)
+            self.blocks[py][px].flag = True
 
         over = False
         if self.blocks[py][px].count > 4:
@@ -418,10 +419,10 @@ class Field(tk.Frame):
             self.blocks[py][px].mark = True
 
             self.robotTurnRight()
-            time.sleep(0.05)
+            time.sleep(0.3)
             self.robotTurnRight()
 
-        time.sleep(0.05)            
+        time.sleep(0.3)            
 
     def robotDecisionShortesPath(self, vwalls, hwalls):
         py, px = self.robot.getPosition()
@@ -471,7 +472,7 @@ class Field(tk.Frame):
         elif state == 6:
             self.robotTurnLeft()
 
-        time.sleep(0.05)         
+        time.sleep(0.3)         
 
     def getBlock(self, py, px, sf=(True, True, True)):
         d = self.robot.getDirection()
@@ -532,11 +533,11 @@ class Field(tk.Frame):
                 self.blocks[y - 1][x].setValue(v + 1)
                 q.put((y - 1, x, v + 1))
             #East
-            if x + 1 < 16 and vwalls[y][x + 1] == False and self.blocks[y][x + 1].getValue() == -1:
+            if x + 1 < self.colNum and vwalls[y][x + 1] == False and self.blocks[y][x + 1].getValue() == -1:
                 self.blocks[y][x + 1].setValue(v + 1)
                 q.put((y, x + 1, v + 1))
             #South
-            if y + 1 < 16 and hwalls[y + 1][x] == False and self.blocks[y + 1][x].getValue() == -1:
+            if y + 1 < self.rowNum and hwalls[y + 1][x] == False and self.blocks[y + 1][x].getValue() == -1:
                 self.blocks[y + 1][x].setValue(v + 1)
                 q.put((y + 1, x, v + 1))
             #West
@@ -569,6 +570,7 @@ class Field(tk.Frame):
             
         self.runRobotStat = True
 
+        while self.runRobotStat == True:
         self.robotMapping(vwalls, hwalls)
         while (self.robot.getDirection() != 'N'):
             self.robot.turnRight()
