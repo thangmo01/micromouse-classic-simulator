@@ -8,3 +8,6 @@
 * รอบที่สองหา shortest path โดย breadth first search
 
 ![IMG](https://github.com/thangmo01/micromouse-classic-simulator/blob/master/img_2.png)
+
+#### การ implement ลงบนหุ่นจริง 
+* ตามไปได้ที่ https://github.com/thangmo01/john-smith-2019
