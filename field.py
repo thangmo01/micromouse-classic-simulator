@@ -571,13 +571,13 @@ class Field(tk.Frame):
         self.runRobotStat = True
 
         while self.runRobotStat == True:
-        self.robotMapping(vwalls, hwalls)
-        while (self.robot.getDirection() != 'N'):
-            self.robot.turnRight()
-            time.sleep(0.1)    
+            self.robotMapping(vwalls, hwalls)
+            while (self.robot.getDirection() != 'N'):
+                self.robot.turnRight()
+                time.sleep(0.1)    
 
-        time.sleep(0.5)
-        self.robotGotoTarget(vwalls, hwalls)
+            time.sleep(0.5)
+            self.robotGotoTarget(vwalls, hwalls)
 
     def robotStop(self):
         self.runRobotStat = False
