@@ -3,4 +3,4 @@
 #### ขั้นตอนการทำงาน
 * รอบแรกเดินหาสำรวจเขาวงกตโดยใช้ flood fill algorithm โดยเริ่มเดินจากจุดเริ่มต้นและกลับมายังจุดเริ่มต้น
 * รอบที่สองหา shortest path โดย breadth first search
-![alt text](https://github.com/thangmo01/micromouse-classic-simulator/blob/master/img_1.jpg?raw=true)
+* ![IMG](https://github.com/thangmo01/micromouse-classic-simulator/blob/master/img_1.png)
